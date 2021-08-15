@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>QR Scanner</title>
+  <script type="module" defer src="index.js"></script>
+  <link rel="stylesheet" type="text/css" href="index.css"/>
+</head>
+<body>
+
+<input type="button" id="flash-toggle" /></button>
+
+<div id="preview-canvas"></div>
+
+<div id="errors">
+  <h1>Error</h1>
+  <span></span>
+</div>
+
+<div id="info">
+  <h2>Simple QR Code scanner bookmarklet</h2>
+  <a id="bm" draggable="true">QR</a> &lt;-- Move this to your browsers bookmark bar
+  <h3>Test area</h3>
+  Here is a text box to check if it works. Click into the text box, then click the bookmarklet, to see if it works properly:
+  <textarea style="width: 100%; height: 10em;"></textarea>
+  <h3>The bookmark code</h3>
+  The above "QR" link / the bookmarklet, contains the following code:
+  <pre id="bmc">
+// Wrapper for bookmarklet function
+javascript:void((()=>{
+
+  // Get the active / focussed element
+  let focus = document.activeElement;
+
+  // The website may embed another using an iframe, which may have the focus instead of the input field. Find the active input field in embedded iframes
+  while(focus && focus.contentDocument)
+    focus = focus.contentDocument.activeElement;
+
+  // If no element has the focus, or it isn't a text input or textarea, return (do nothing else)
+  if(!focus || ( !(focus instanceof HTMLInputElement &amp;&amp; focus.type=='text') && !(focus instanceof HTMLTextAreaElement) ) )
+    return;
+
+  // Open the qr code scanner webapp 
+  const app = open("https://qr-s.s.abrecht.li/", null, "height=600,width=600,resizable");
+
+  // Callback for messages from the qr code scanner webapp
+  const ondata = ({source, data})=>{
+
+    // Check that the message was really from the qr code scanner webapp.
+    if(source === app){
+
+      // If it wasn't about a scanned qr code, return (do nothing else)
+      if(data.type !== 'qr-code')
+        return;
+
+      // Append the data from the qr-code to the end of the input or textarea which was active/focussed when the qr code scanner webapp was opened
+      focus.value += data.detail;
+
+    }else{ // If the message was not from the qr code scanner webapp
+      // And if it's still open, return (do nothing else)
+      if(!app.closed)
+        return;
+    }
+
+    // Either we got a QR code, or the qr code scanner webapp is closed. No longer listen for events &amp; try to close the webapp.
+    removeEventListener("message", ondata);
+    app.close();
+  };
+
+  // Wait for messages
+  addEventListener("message", ondata, false);
+
+// End of wrapper for bookmarklet function
+})());
+  </pre>
+<script>
+document.getElementById("bm").href = encodeURI( // Set the "QR" link/bookmarklet above & make sure it's properly URL Encoded
+  document.getElementById("bmc").innerText // Set it to the content of the code above
+          .replace(/\/\/ .*|^ *|/g,'').split('\n').join('').replace(/ +/g,' ') // But remove comments, newlines and spaces first
+);
+</script>
+
+  <h3>Security considerations</h3>
+  The qr code scanner webapp can not access the website on which the bookmarklet was executed, because it is opened in a new window, with a different origin.
+  The Bookmarklet code, however, can and does access the website it is executed on, for finding the input field to past into, and so on.
+  You can verify what the bookmarklet does yourself, see the bookmarklet code above and it's explanation above. Feel free to verify that it's accurat,
+  and that the code in the final bookmarklet indeed matches the above (minus the comments and spaces).
+  The qr code scanner webapp sends the content of a detected qr code as a message back to the bookmarklet which opened it. I use a 3rd party project for
+  scanning the qr codes in the qr code scanner webapp, and I haven't audited it's source a lot. If you use it to scan a swiss qr code or something similar,
+  I recommend double checking the reported data is accurate, just in case. It's always good to double check things.
+
+  <h3>Limitations</h3>
+  This bookmarklet will not work for inputs in an embeded frame with a diferent origin from the parent frame, and it will not work if the webpage blocks popups or javascript: URIs using it's Content-Security-Policy.
+
+  <h3>Credit</h3>
+  This is mostly based on and uses the qr code scanner demo from <a href="https://github.com/nimiq/qr-scanner">https://github.com/nimiq/qr-scanner</a>. That js library in turn uses some other libraries too.
+
+  <h3>Source code</h3>
+  The source code of this page is available using git from variouse places:
+  <ul>
+    <li><a href=""></a></li>
+  </ul>
+
+</div>
+
+</body>
+</html>

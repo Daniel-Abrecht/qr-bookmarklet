@@ -1,0 +1,61 @@
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body.ready {
+  overflow: hidden;
+}
+
+#preview-canvas {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+body.ready #preview-canvas {
+  display: block;
+}
+
+#flash-toggle {
+  display: none;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
+#preview-canvas canvas {
+  display: block;
+  width: min(100vh, 100vw);
+  height: min(100vh, 100vw);
+  margin: max(0px, calc(50vh - 50vw)) max(0px, calc(50vw - 50vh));
+}
+
+#errors, #info {
+  display: none;
+  margin: 1rem;
+}
+
+body.noinc #info {
+  display: block;
+}
+
+body.error #errors {
+  display: block;
+}
+
+#info pre {
+  border: 1px solid #000;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+#bm {
+  border: 1px solid #000;
+  padding: 0.5em;
+  cursor: move;
+  text-decoration: none;
+  color: blue;
+}
